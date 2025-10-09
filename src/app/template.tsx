@@ -3,5 +3,5 @@ export default function DashboardTemplate({
 }: {
   children: React.ReactNode;
 }) {
-  return <div className="animate-fadeIn">{children}</div>;
+  return <div>{children}</div>;
 }
