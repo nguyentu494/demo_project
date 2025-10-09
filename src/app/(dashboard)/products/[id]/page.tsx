@@ -1,4 +1,3 @@
-// src/app/products/[id]/page.tsx
 import ProductDetail from "@/components/ProductDetail";
 import { Product } from "@/types/implements/Product";
 import { notFound } from "next/navigation";
@@ -10,7 +9,7 @@ export default async function ProductPage({
   params: { id: string };
 }) {
   const res = await fetch(`https://dummyjson.com/products/${params.id}`, {
-    next: { revalidate: 60 }, // ISR cache 1 phút
+    next: { revalidate: 60 }, 
   });
 
   if (!res.ok) return notFound();

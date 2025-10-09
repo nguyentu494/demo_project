@@ -1,4 +1,3 @@
-// src/app/api/products/route.ts
 import { Product, ProductFetch, ProductResponse } from "@/types/implements/Product";
 import { NextResponse } from "next/server";
 
