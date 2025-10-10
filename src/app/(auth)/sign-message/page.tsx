@@ -1,47 +1,27 @@
 "use client";
+import { useSearchParams } from "next/navigation";
+import { useSignMessage } from "wagmi";
 
-import { SignMessage } from "@/hooks/useSignMessage";
-import Link from "next/link";
-import { useEffect } from "react";
-import { useAccount, useConnect, useDisconnect } from "wagmi";
-
-export default function Sign() {
-  const { isConnected, address } = useAccount();
-  const { disconnect } = useDisconnect();
-
-  useEffect(() => {
-    if (isConnected && !address) {
-      disconnect();
-    }
-  }, [isConnected, address, disconnect]);
-
-  if (isConnected) {
-    return (
-      <div>
-        <SignMessage />
-        <button
-          onClick={() => {
-            disconnect();
-            localStorage.removeItem("isSigned");
-          }}
-          className="mt-4 px-4 py-2 rounded-md bg-gray-200 hover:bg-gray-300"
-        >
-          Disconnect
-        </button>
-      </div>
-    );
-  }
+export default function SignPage() {
+  const searchParams = useSearchParams();
+  const message = decodeURIComponent(searchParams.get("message") || "");
+  const { signMessage, data: signature } = useSignMessage();
 
   return (
-    <div className="space-y-4">
-      <p className="text-gray-700">
-        You are not connected. Please connect your wallet to view your profile.
-      </p>
-      <Link href="/login">
-        <button className="mt-4 px-4 py-2 rounded-md bg-gray-200 hover:bg-gray-300">
-          Back to Login
-        </button>
-      </Link>
+    <div className="p-4">
+      <h1 className="font-bold text-xl mb-4">Sign Message</h1>
+      <p className="mb-4 whitespace-pre-line">{message}</p>
+      <button
+        onClick={() => signMessage({ message })}
+        className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+      >
+        Sign with MetaMask
+      </button>
+      {signature && (
+        <p className="mt-4 text-sm text-gray-700 break-all">
+          Signature: {signature}
+        </p>
+      )}
     </div>
   );
 }

@@ -24,44 +24,47 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen w-full flex justify-center items-center bg-gray-50 flex-col ">
-      <div className=" flex items-center justify-center bg-gray-50">
-        <form
-          onSubmit={handleLogin}
-          className="bg-white p-8 rounded-2xl shadow-md w-full max-w-sm space-y-5"
-        >
-          <h1 className="text-2xl font-bold text-center text-gray-800">
-            Login
-          </h1>
+      <div className="items-center justify-center bg-gray-50">
+        <div className="bg-white p-8  rounded-2xl shadow-md w-full max-w-sm space-y-5">
+          <form onSubmit={handleLogin}>
+            <h1 className="text-2xl font-bold text-center text-gray-800">
+              Login
+            </h1>
 
-          <div className="space-y-3">
-            <input
-              type="text"
-              placeholder="Username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="w-full border text-black border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
-            />
+            <div className="space-y-3">
+              <input
+                type="text"
+                placeholder="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="w-full border text-black border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+              />
 
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full border text-black border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
-            />
-          </div>
+              <input
+                type="password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full border text-black border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+            </div>
 
-          {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+            {error && (
+              <p className="text-red-500 text-sm text-center">{error}</p>
+            )}
 
-          <button
-            type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-2 font-semibold transition"
-          >
-            Sign In
-          </button>
-        </form>
+            <button
+              type="submit"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-2 font-semibold transition mt-5"
+            >
+              Sign In
+            </button>
+          </form>
+          <div className="w-full h-0.5 bg-gray-200 "></div>
+
+          <WalletOptions />
+        </div>
       </div>
-      <WalletOptions />
     </div>
   );
 }

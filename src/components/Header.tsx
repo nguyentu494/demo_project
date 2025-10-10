@@ -31,7 +31,7 @@ export default function Header() {
               Products
             </Link>
             <Link
-              href="/sign-message"
+              href="/profile"
               className="text-gray-900 hover:text-blue-600 dark:text-gray-100 dark:hover:text-blue-400 transition-colors duration-200"
             >
               Profile

@@ -10,10 +10,10 @@ import {
 import { getBalance } from "wagmi/actions";
 import { config } from "../../config";
 import React, { useEffect } from "react";
+import { WalletOptions } from "./WalletOptions";
 
 export function Profile() {
   const { isConnected, address } = useAccount();
-  const { connect, connectors, error, isPending } = useConnect();
   const { disconnect } = useDisconnect();
   const { data: ensName } = useEnsName({ address });
   const { data: ensAvatar } = useEnsAvatar({ name: ensName! });
@@ -29,6 +29,19 @@ export function Profile() {
     }
   }, [isConnected, address]);
 
+  const handleDisconnect = async () => {
+    await disconnect();
+  };
+
+  if (!isConnected) {
+    return (
+      <div>
+        <h3>Please connect your wallet to view your profile.</h3>
+        <WalletOptions />
+      </div>
+    );
+  }
+
   return (
     <div>
       {ensAvatar && <img alt="ENS Avatar" src={ensAvatar} />}
@@ -38,7 +51,7 @@ export function Profile() {
           Balance: {Number(balance.value).toFixed(4)} {balance.symbol}
         </div>
       )}
-      <button onClick={() => disconnect()}>Disconnect</button>
+      <button onClick={handleDisconnect}>Disconnect</button>
     </div>
   );
 }
