@@ -1,5 +1,8 @@
 "use client";
 
+import { verifyMessage } from "@/api/wallet";
+import { GET } from "@/app/api/auth/sign-message/route";
+import api from "@/libs/axios";
 import { useRouter } from "next/navigation";
 import * as React from "react";
 import {
@@ -12,48 +15,58 @@ import {
 
 export function WalletOptions() {
   const router = useRouter();
-  const { connectors, connect, data: connectData } = useConnect();
-  const { isConnected, address } = useAccount();
+  const { connectors, connect } = useConnect();
+  const { isConnected, address, chainId } = useAccount();
   const { disconnect } = useDisconnect();
   const [isOpen, setIsOpen] = React.useState(false);
+  const [nonce, setNonce] = React.useState<number | null>(null);
 
   const {
     signMessage,
     data: signature,
     variables,
     isSuccess: isSigned,
+    isError,
   } = useSignMessage();
 
   React.useEffect(() => {
-    if (isConnected && address) {
-      const message = `
-    Please sign this message to verify your wallet ownership.
-    Address: ${address}
-    Nonce: ${Math.floor(Math.random() * 1000000)}`;
-      signMessage({ message });
-    }
+    console.log(isConnected, address)
+    const sign = async () => {
+      if (isConnected && address) {
+        const res = await GET();
+        const data = await res.json();
+
+        const message = `${data.data.data.message}`;
+        setNonce(data.data.data.nonce);
+    
+        signMessage({ message });
+      }
+    };
+    sign();
   }, [isConnected, address]);
 
-  console.log(isConnected)
+  React.useEffect(() => {
+    if (isError) {
+      alert("Signing failed! Please try again.");
+      disconnect();
+    }
+  }, [isError]);
 
   React.useEffect(() => {
     if (isSigned && signature && variables?.message && address) {
       (async () => {
         try {
-          const res = await fetch("/api/auth/verify", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              address,
-              message: variables.message,
-              signature,
-            }),
-          });
 
-          const data = await res.json();
+          const res = await verifyMessage({
+            publicAddress: address as `0x${string}`,
+            nonce: nonce as number,
+            signature: signature as `0x${string}`,
+            chainId: chainId as number,
+          })
 
-          if (data.verified) {
-            document.cookie = "isLogged=true; path=/; max-age=3600";
+          
+          if (res?.accessToken) {
+            document.cookie = `accessToken=${res.accessToken}; path=/; max-age=3600`;
             router.push("/home");
           } else {
             disconnect();
@@ -66,7 +79,7 @@ export function WalletOptions() {
         }
       })();
     }
-  }, [isSigned, signature, variables, address, disconnect, router]);
+  }, [isSigned, signature]);
 
   return (
     <div className="flex flex-col items-center">

@@ -1,16 +1,18 @@
 "use client";
 
+import React, { useEffect } from "react";
+
+import { getBalance } from "wagmi/actions";
+import { config } from "../../config";
+import { WalletOptions } from "./WalletOptions";
 import {
   useAccount,
-  useConnect,
   useDisconnect,
   useEnsAvatar,
   useEnsName,
+  useSignMessage,
 } from "wagmi";
-import { getBalance } from "wagmi/actions";
-import { config } from "../../config";
-import React, { useEffect } from "react";
-import { WalletOptions } from "./WalletOptions";
+import { useRouter } from "next/navigation";
 
 export function Profile() {
   const { isConnected, address } = useAccount();
@@ -18,6 +20,8 @@ export function Profile() {
   const { data: ensName } = useEnsName({ address });
   const { data: ensAvatar } = useEnsAvatar({ name: ensName! });
   const [balance, setBalance] = React.useState<any>(null);
+  const { reset, isPending } = useSignMessage();
+  const router = useRouter();
 
   useEffect(() => {
     if (isConnected && address) {
@@ -30,20 +34,27 @@ export function Profile() {
   }, [isConnected, address]);
 
   const handleDisconnect = async () => {
-    await disconnect();
+    disconnect();
+    reset();
+    await fetch("/api/auth/log-out", {
+      method: "POST",
+    });
+    router.push("/login");
   };
 
-  if (!isConnected) {
+  if (!isConnected && !isPending) {
     return (
       <div>
-        <h3>Please connect your wallet to view your profile.</h3>
+        <h3 className="text-black">
+          Please connect your wallet to view your profile.
+        </h3>
         <WalletOptions />
       </div>
     );
   }
 
   return (
-    <div>
+    <div className="text-black">
       {ensAvatar && <img alt="ENS Avatar" src={ensAvatar} />}
       {address && <div>{ensName ? `${ensName} (${address})` : address}</div>}
       {balance && (

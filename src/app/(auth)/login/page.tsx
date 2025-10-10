@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { WalletOptions } from "@/components/WalletOptions";
 
@@ -21,6 +21,15 @@ export default function LoginPage() {
     if (res.ok) router.push("/profile");
     else alert("Invalid credentials");
   };
+
+  useEffect(() => {
+    (async () => {
+      const res = await fetch("/api/auth/check-me");
+      if (res.ok) {
+        router.push("/home"); 
+      }
+    })();
+  }, [router]);
 
   return (
     <div className="min-h-screen w-full flex justify-center items-center bg-gray-50 flex-col ">

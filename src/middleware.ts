@@ -3,10 +3,9 @@ import type { NextRequest } from "next/server";
 
 export function middleware(req: NextRequest) {
 
-  const isLogged = req.cookies.get("isLogged")?.value;
-  console.log(isLogged)
+  const accessToken = req.cookies.get("accessToken")?.value;
 
-  if (!isLogged) {
+  if (!accessToken) {
     const res = NextResponse.redirect(new URL("/login", req.url));
     res.headers.set("Cache-Control", "no-store");
     return res;
@@ -18,5 +17,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/products/:path*", "/home/:path*"],
+  matcher: ["/products/:path*", "/home/:path*", "/profile/:path*"],
 };

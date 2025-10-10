@@ -16,6 +16,7 @@ export function SignMessage() {
     isPending,
     signMessage,
     variables,
+
   } = useSignMessage();
 
   React.useEffect(() => {
@@ -61,45 +62,4 @@ export function SignMessage() {
     if (!message) return;
     signMessage({ message });
   };
-
-  return (
-    <form onSubmit={onSubmit} className="space-y-3">
-      <label htmlFor="message" className="block text-sm font-medium">
-        Enter a message to sign
-      </label>
-      <textarea
-        id="message"
-        name="message"
-        placeholder="The quick brown fox…"
-        className="w-full rounded border p-2"
-      />
-      <button
-        type="submit"
-        disabled={isPending}
-        className="rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-60"
-      >
-        {isPending ? "Check Wallet…" : "Sign Message"}
-      </button>
-
-      {signature && (
-        <div className="mt-3 space-y-1">
-          <div>
-            <strong>Recovered Address:</strong> {recoveredAddress || "—"}
-          </div>
-          <div className="break-all">
-            <strong>Signature:</strong> {signature}
-          </div>
-        </div>
-      )}
-
-      {verified === true && (
-        <p className="text-green-600">✅ Signature verified — Logged in!</p>
-      )}
-      {verified === false && (
-        <p className="text-red-600">❌ Invalid signature!</p>
-      )}
-
-      {error && <div className="mt-2 text-red-600">{error.message}</div>}
-    </form>
-  );
 }
