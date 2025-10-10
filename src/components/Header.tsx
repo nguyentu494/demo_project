@@ -19,7 +19,7 @@ export default function Header() {
 
           <nav className="hidden md:flex items-center space-x-8">
             <Link
-              href="/"
+              href="/home"
               className="text-gray-900 hover:text-blue-600 dark:text-gray-100 dark:hover:text-blue-400 transition-colors duration-200"
             >
               Home
@@ -31,10 +31,10 @@ export default function Header() {
               Products
             </Link>
             <Link
-              href="/categories"
+              href="/sign-message"
               className="text-gray-900 hover:text-blue-600 dark:text-gray-100 dark:hover:text-blue-400 transition-colors duration-200"
             >
-              Categories
+              Profile
             </Link>
           </nav>
 

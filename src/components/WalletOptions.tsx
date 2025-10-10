@@ -11,7 +11,8 @@ export function WalletOptions() {
 
   React.useEffect(() => {
     if (isConnected) {
-      router.push("/sign-message"); 
+      document.cookie = "isLogged=true; path=/; max-age=3600";
+      router.push("/home");
     }
   }, [isConnected, router]);
 

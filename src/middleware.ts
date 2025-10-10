@@ -4,6 +4,7 @@ import type { NextRequest } from "next/server";
 export function middleware(req: NextRequest) {
 
   const isLogged = req.cookies.get("isLogged")?.value;
+  console.log(isLogged)
 
   if (!isLogged) {
     const res = NextResponse.redirect(new URL("/login", req.url));
