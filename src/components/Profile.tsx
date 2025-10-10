@@ -1,16 +1,21 @@
-import React, { useEffect } from "react";
+"use client";
 
-import { getBalance } from "wagmi/actions";
-import { config } from "../../config";
-import { WalletOptions } from "./WalletOptions";
+import React, { useEffect, useMemo, useState } from "react";
+
+import { useRouter } from "next/navigation";
 import {
   useAccount,
+  useChainId,
+  useChains,
   useDisconnect,
   useEnsAvatar,
   useEnsName,
   useSignMessage,
+  useSwitchChain,
 } from "wagmi";
-import { useRouter } from "next/navigation";
+import { getBalance } from "wagmi/actions";
+import { config } from "../../config";
+import { WalletOptions } from "./WalletOptions";
 
 export function Profile() {
   const { isConnected, address } = useAccount();
@@ -19,7 +24,19 @@ export function Profile() {
   const { data: ensAvatar } = useEnsAvatar({ name: ensName! });
   const [balance, setBalance] = React.useState<any>(null);
   const { reset, isPending } = useSignMessage();
+  const [isMounted, setIsMounted] = useState(false);
+
   const router = useRouter();
+  const chains = useChains();
+  const chainId = useChainId();
+  const { switchChain, status, error } = useSwitchChain();
+
+  console.log(chainId, "thiss is chainId");
+  console.log(chains);
+  const currentChain = useMemo(
+    () => chains.find((c) => c.id === chainId),
+    [chains, chainId]
+  );
 
   useEffect(() => {
     if (isConnected && address) {
@@ -39,6 +56,11 @@ export function Profile() {
     });
     router.push("/login");
   };
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) return null;
 
   if (!isConnected && !isPending) {
     return (
@@ -61,6 +83,47 @@ export function Profile() {
         </div>
       )}
       <button onClick={handleDisconnect}>Disconnect</button>
+      <div className="p-4 border rounded-lg shadow-sm w-fit space-y-3 bg-white">
+        <h3 className="text-lg font-semibold text-gray-800">Chain Info</h3>
+
+        {currentChain ? (
+          <div className="space-y-1">
+            <p className="text-sm">
+              <strong>Name:</strong> {currentChain.name}
+            </p>
+            <p className="text-sm">
+              <strong>ID:</strong> {currentChain.id}
+            </p>
+            <p className="text-sm">
+              <strong>Network:</strong> {currentChain.nativeCurrency.name}
+            </p>
+          </div>
+        ) : (
+          <p className="text-sm text-gray-500">No chain connected</p>
+        )}
+
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Switch chain:
+          </label>
+          <select
+            className="border px-2 py-1 rounded-md text-sm"
+            value={chainId || ""}
+            onChange={(e) => switchChain({ chainId: Number(e.target.value) })}
+          >
+            {chains.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {status === "pending" && (
+          <p className="text-xs text-yellow-600">Switching chain...</p>
+        )}
+        {error && <p className="text-xs text-red-600">{error.message}</p>}
+      </div>
     </div>
   );
 }
