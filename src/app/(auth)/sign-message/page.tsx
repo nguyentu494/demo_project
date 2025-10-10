@@ -1,13 +1,12 @@
 "use client";
 
 import { SignMessage } from "@/hooks/useSignMessage";
-import { useAccount, useConnect, useDisconnect } from "wagmi";
-import { useEffect } from "react";
 import Link from "next/link";
+import { useEffect } from "react";
+import { useAccount, useConnect, useDisconnect } from "wagmi";
 
 export default function Sign() {
   const { isConnected, address } = useAccount();
-  const { connect, connectors, error, isPending } = useConnect();
   const { disconnect } = useDisconnect();
 
   useEffect(() => {
