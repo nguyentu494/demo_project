@@ -3,12 +3,17 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { WalletOptions } from "@/components/WalletOptions";
+import { useAccount, useConnect, useDisconnect } from "wagmi";
 
 export default function LoginPage() {
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isVerifying, setIsVerifying] = useState(false);
+
+  const { isConnected } = useAccount();
+  const { disconnect, reset } = useDisconnect();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,10 +28,25 @@ export default function LoginPage() {
   };
 
   useEffect(() => {
+    const checkSession = async () => {
+      try {
+        const res = await fetch("/api/auth/check-me");
+        if (!res.ok && isConnected && !isVerifying) {
+          disconnect();
+        }
+      } catch (e) {
+        if (isConnected && !isVerifying) disconnect();
+      }
+    };
+    checkSession();
+  }, [isConnected, disconnect, isVerifying]);
+
+  useEffect(() => {
     (async () => {
       const res = await fetch("/api/auth/check-me");
-      if (res.ok) {
-        router.push("/home"); 
+      const data = await res.json();
+      if (data.authenticated) {
+        router.push("/home");
       }
     })();
   }, [router]);
@@ -71,7 +91,10 @@ export default function LoginPage() {
           </form>
           <div className="w-full h-0.5 bg-gray-200 "></div>
 
-          <WalletOptions />
+          <WalletOptions
+            verifying={isVerifying}
+            setIsVerifying={setIsVerifying}
+          />
         </div>
       </div>
     </div>

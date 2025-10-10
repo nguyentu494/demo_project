@@ -1,6 +1,9 @@
+
 import Link from "next/link";
+import { useAccount, useConnect } from "wagmi";
 
 export default async function DashboardPage() {
+
 
   return (
     <div className="p-6">

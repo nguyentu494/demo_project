@@ -6,7 +6,7 @@ export async function GET() {
   const token = cookieStore.get("accessToken")?.value;
 
   if (!token) {
-    return NextResponse.json({ authenticated: false }, { status: 401 });
+    return NextResponse.json({ authenticated: false });
   }
 
   return NextResponse.json({ authenticated: true });

@@ -13,11 +13,16 @@ import {
   useSignMessage,
 } from "wagmi";
 
-export function WalletOptions() {
+interface WalletOptionsProps {
+  setIsVerifying?: (verifying: boolean) => void;
+  verifying?: boolean;
+}
+
+export function WalletOptions({ setIsVerifying, verifying }: WalletOptionsProps) {
   const router = useRouter();
   const { connectors, connect } = useConnect();
   const { isConnected, address, chainId } = useAccount();
-  const { disconnect } = useDisconnect();
+  const { disconnect, reset } = useDisconnect();
   const [isOpen, setIsOpen] = React.useState(false);
   const [nonce, setNonce] = React.useState<number | null>(null);
 
@@ -27,10 +32,11 @@ export function WalletOptions() {
     variables,
     isSuccess: isSigned,
     isError,
+    error,
   } = useSignMessage();
 
   React.useEffect(() => {
-    console.log(isConnected, address)
+    setIsVerifying?.(verifying ?? true);
     const sign = async () => {
       if (isConnected && address) {
         const res = await GET();
@@ -38,7 +44,7 @@ export function WalletOptions() {
 
         const message = `${data.data.data.message}`;
         setNonce(data.data.data.nonce);
-    
+
         signMessage({ message });
       }
     };
@@ -46,34 +52,25 @@ export function WalletOptions() {
   }, [isConnected, address]);
 
   React.useEffect(() => {
-    if (isError) {
-      alert("Signing failed! Please try again.");
-      disconnect();
-    }
-  }, [isError]);
-
-  React.useEffect(() => {
     if (isSigned && signature && variables?.message && address) {
       (async () => {
         try {
-
           const res = await verifyMessage({
             publicAddress: address as `0x${string}`,
             nonce: nonce as number,
             signature: signature as `0x${string}`,
             chainId: chainId as number,
-          })
+          });
 
-          
           if (res?.accessToken) {
             document.cookie = `accessToken=${res.accessToken}; path=/; max-age=3600`;
             router.push("/home");
           } else {
-            disconnect();
+            await disconnect();
             alert("Signature invalid!");
           }
         } catch (err) {
-          disconnect();
+          await disconnect();
           console.error(err);
           alert("Verification failed.");
         }
