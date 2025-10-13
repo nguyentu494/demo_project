@@ -1,9 +1,9 @@
 # AWS Cognito + NextAuth + MFA Integration Guide
 
-**NodeJS Version**: v22.17.0
-**pnpm Version**: 10.12.4
-**@aws-sdk/client-cognito-identity-provider**: ^3.908.0
-**openid-client**: ^6.8.1,
+- **NodeJS Version**: v22.17.0
+- **pnpm Version**: 10.12.4
+- **@aws-sdk/client-cognito-identity-provider**: ^3.908.0
+- **openid-client**: ^6.8.1,
 
 ---
 
