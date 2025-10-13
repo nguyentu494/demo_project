@@ -11,8 +11,6 @@ export async function POST(req: Request) {
 
   const client = new CognitoIdentityProviderClient({ region: "us-east-1" });
 
-  
-
   try {
     const command = new SignUpCommand({
       ClientId: process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID!,

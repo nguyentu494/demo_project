@@ -9,12 +9,57 @@ export default function RegisterForm() {
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
   const router = useRouter();
+
+  const validatePassword = (password: string) => {
+    const errors: string[] = [];
+
+    if (!/\d/.test(password)) {
+      errors.push("Chứa ít nhất 1 số");
+    }
+
+    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
+      errors.push("Chứa ít nhất 1 ký tự đặc biệt");
+    }
+
+    if (!/[A-Z]/.test(password)) {
+      errors.push("Chứa ít nhất 1 chữ cái viết hoa");
+    }
+
+    if (!/[a-z]/.test(password)) {
+      errors.push("Chứa ít nhất 1 chữ cái viết thường");
+    }
+
+    if (password.length < 8) {
+      errors.push("Tối thiểu 8 ký tự");
+    }
+
+    return errors;
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newPassword = e.target.value;
+    setPassword(newPassword);
+
+    if (newPassword) {
+      const errors = validatePassword(newPassword);
+      setPasswordErrors(errors);
+    } else {
+      setPasswordErrors([]);
+    }
+  };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setMessage("");
+
+    const errors = validatePassword(password);
+    if (errors.length > 0) {
+      setError("Mật khẩu không đáp ứng yêu cầu bảo mật.");
+      return;
+    }
 
     const res = await fetch("/api/auth/register", {
       method: "POST",
@@ -61,14 +106,81 @@ export default function RegisterForm() {
             className="border rounded-lg px-4 py-2 focus:ring-2 focus:ring-orange-400 focus:outline-none"
             required
           />
-          <input
-            type="password"
-            placeholder="Mật khẩu"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="border rounded-lg px-4 py-2 focus:ring-2 focus:ring-orange-400 focus:outline-none"
-            required
-          />
+          <div className="space-y-2">
+            <input
+              type="password"
+              placeholder="Mật khẩu"
+              value={password}
+              onChange={handlePasswordChange}
+              className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-orange-400 focus:outline-none"
+              required
+            />
+
+            {/* Password Requirements */}
+            {password && (
+              <div className="bg-gray-50 border rounded-lg p-3">
+                <p className="text-sm font-medium text-gray-700 mb-2">
+                  Yêu cầu mật khẩu:
+                </p>
+                <div className="space-y-1">
+                  <div
+                    className={`flex items-center text-xs ${
+                      password.length >= 8 ? "text-green-600" : "text-red-500"
+                    }`}
+                  >
+                    <span className="mr-2">
+                      {password.length >= 8 ? "✓" : "✗"}
+                    </span>
+                    Tối thiểu 8 ký tự
+                  </div>
+                  <div
+                    className={`flex items-center text-xs ${
+                      /\d/.test(password) ? "text-green-600" : "text-red-500"
+                    }`}
+                  >
+                    <span className="mr-2">
+                      {/\d/.test(password) ? "✓" : "✗"}
+                    </span>
+                    Chứa ít nhất 1 số
+                  </div>
+                  <div
+                    className={`flex items-center text-xs ${
+                      /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)
+                        ? "text-green-600"
+                        : "text-red-500"
+                    }`}
+                  >
+                    <span className="mr-2">
+                      {/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)
+                        ? "✓"
+                        : "✗"}
+                    </span>
+                    Chứa ít nhất 1 ký tự đặc biệt
+                  </div>
+                  <div
+                    className={`flex items-center text-xs ${
+                      /[A-Z]/.test(password) ? "text-green-600" : "text-red-500"
+                    }`}
+                  >
+                    <span className="mr-2">
+                      {/[A-Z]/.test(password) ? "✓" : "✗"}
+                    </span>
+                    Chứa ít nhất 1 chữ cái viết hoa
+                  </div>
+                  <div
+                    className={`flex items-center text-xs ${
+                      /[a-z]/.test(password) ? "text-green-600" : "text-red-500"
+                    }`}
+                  >
+                    <span className="mr-2">
+                      {/[a-z]/.test(password) ? "✓" : "✗"}
+                    </span>
+                    Chứa ít nhất 1 chữ cái viết thường
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
 
           {error && <p className="text-red-500 text-center text-sm">{error}</p>}
           {message && (
@@ -77,7 +189,12 @@ export default function RegisterForm() {
 
           <button
             type="submit"
-            className="bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2 rounded-lg transition"
+            disabled={passwordErrors.length > 0 && password.length > 0}
+            className={`font-semibold py-2 rounded-lg transition ${
+              passwordErrors.length > 0 && password.length > 0
+                ? "bg-gray-400 cursor-not-allowed text-gray-600"
+                : "bg-orange-500 hover:bg-orange-600 text-white"
+            }`}
           >
             Đăng ký
           </button>

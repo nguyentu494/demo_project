@@ -1,9 +1,37 @@
 # AWS Cognito + NextAuth + MFA Integration Guide
 
-- **NodeJS Version**: v22.17.0
-- **pnpm Version**: 10.12.4
-- **@aws-sdk/client-cognito-identity-provider**: ^3.908.0
-- **openid-client**: ^6.8.1,
+> � Hướng dẫn chi tiết cách cấu hình **AWS Cognito** để đăng nhập, đăng xuất, và bật **MFA (Authenticator App)** trong ứng dụng **Next.js 15 + NextAuth**.
+
+## 🛠️ Tech Stack & Dependencies
+
+- **Framework**: Next.js 15.5.4 với Turbopack
+- **Runtime**: Node.js v22.17.0
+- **Package Manager**: pnpm 10.12.4
+- **Authentication**: NextAuth 4.24.11 + AWS Cognito
+- **UI**: React 19.1.0 + TailwindCSS 4
+- **AWS SDK**: @aws-sdk/client-cognito-identity-provider 3.908.0
+- **Others**: openid-client 6.8.1
+
+## 🎯 Features
+
+✅ **AWS Cognito Authentication**
+
+- Đăng nhập/đăng xuất với Hosted UI
+- Email/Username authentication
+- Session management với JWT tokens
+
+<!-- ✅ **Multi-Factor Authentication (MFA)**
+
+- TOTP Authenticator App support (Google Authenticator, Authy)
+- QR Code setup for MFA enrollment
+- Optional MFA configuration -->
+
+✅ **Security Features**
+
+- HTTP-only cookies cho token storage
+- Automatic token refresh
+- Secure logout với token revocation
+- Production-ready security practices
 
 ---
 
@@ -18,7 +46,6 @@
    - **User attributes:** chọn `email`, `preferred_username`
 4. Bấm **Create user pool**
 
-📸 _Chèn ảnh màn hình tạo user pool ở đây:_
 
 <img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/7df32777-b9bf-47b5-81c0-dabafeff81e5" />
 
@@ -93,7 +120,11 @@ NEXT_PUBLIC_COGNITO_CLIENT_ID=1dc68vagxxxxxxxxxxx
 NEXT_PUBLIC_COGNITO_CLIENT_SECRET=196lrmrert3uxxxxxxxxxxxxxx
 NEXT_PUBLIC_COGNITO_ISSUER=https://cognito-idp.us-east-1.amazonaws.com/us-east-1_HeTka1C37
 NEXT_PUBLIC_COGNITO_DOMAIN=https://us-east-1hetka1c37.auth.us-east-1.amazoncognito.com
-NEXT_PUBLIC_LOGOUT_REDIRECT_URI=http://localhost:3000/login // logout này phải được cấu hình cho allowed logout baseurl
+NEXT_PUBLIC_LOGOUT_REDIRECT_URI=http://localhost:3000/login
+
+# NextAuth Configuration (Required)
+NEXTAUTH_SECRET=your-super-secret-key
+NEXTAUTH_URL=http://localhost:3000
 ```
 
 ---
@@ -335,11 +366,25 @@ export async function GET() {
 
 ## 🎯 Kết quả cuối cùng
 
-- ✅ Đăng nhập/đăng xuất hoạt động
-- ✅ Token lưu qua cookies an toàn
-- ✅ MFA qua Authenticator app
-- ✅ Có thể lấy thông tin user bằng AWS SDK
-- ✅ Tương thích với môi trường production (Next.js 14+)
+- ✅ **Authentication hoàn chình**: Đăng nhập/đăng xuất với AWS Cognito Hosted UI
+- ✅ **Token Security**: Lưu trữ tokens qua HTTP-only cookies an toàn
+- ✅ **MFA Support**: Multi-Factor Authentication với TOTP Authenticator apps
+- ✅ **Session Management**: Tự động refresh tokens và handle session expiry
+- ✅ **User Management**: Lấy thông tin user qua AWS SDK
+- ✅ **Production Ready**: Tương thích với môi trường production (Next.js 15+)
+- ✅ **TypeScript**: Full type safety và IntelliSense support
+- ✅ **Modern Stack**: Next.js 15 + Turbopack + TailwindCSS
+- ✅ **Security Best Practices**: Secure cookies, token revocation, proper logout flow
+
+---
+
+> 💡 **Lưu ý quan trọng:**
+>
+> - Luôn sử dụng HTTPS trong production
+> - Cấu hình CORS và CSP headers phù hợp
+> - Thường xuyên rotate JWT secrets
+> - Monitor và log authentication events
+> - Backup cấu hình Cognito User Pool
 
 ---
 
