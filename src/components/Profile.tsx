@@ -62,18 +62,22 @@ export function Profile() {
     try {
       disconnect();
       reset();
-      
-      await fetch("/api/auth/log-out", { method: "GET" });
 
-      const logoutUrl = `${
-        process.env.NEXT_PUBLIC_COGNITO_DOMAIN
-      }/logout?client_id=${
-        process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID
-      }&logout_uri=${encodeURIComponent(
-        process.env.NEXT_PUBLIC_LOGOUT_REDIRECT_URI!
-      )}`;
+      await fetch("/api/auth/log-out", {
+        method: "GET",
+        credentials: "include",
+      });
 
-      window.location.href = logoutUrl;
+      // const logoutUrl = `${
+      //   process.env.NEXT_PUBLIC_COGNITO_DOMAIN
+      // }/logout?client_id=${
+      //   process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID
+      // }&logout_uri=${encodeURIComponent(
+      //   process.env.NEXT_PUBLIC_LOGOUT_REDIRECT_URI!
+      // )}`;
+
+      // window.location.href = logoutUrl;
+      router.push("/login");
     } catch (err) {
       console.error("Logout failed:", err);
     }

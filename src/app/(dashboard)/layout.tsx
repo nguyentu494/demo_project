@@ -28,7 +28,7 @@ export default function RootLayout({
   return (
     <>
       <Header />
-      <WalletSessionSync />
+      {/* <WalletSessionSync /> */}
       <div className="w-full bg-white">
         <main className="container mx-auto min-h-screen bg-white">
           {children}

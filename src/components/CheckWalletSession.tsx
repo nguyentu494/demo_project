@@ -39,17 +39,22 @@ export function WalletSessionSync() {
 
         if (!isConnected && !authenticated) {
           try {
-            await fetch("/api/auth/log-out", { method: "GET" });
+            await fetch("/api/auth/log-out", {
+              method: "GET",
+              credentials: "include",
+            });
 
-            const logoutUrl = `${
-              process.env.NEXT_PUBLIC_COGNITO_DOMAIN
-            }/logout?client_id=${
-              process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID
-            }&logout_uri=${encodeURIComponent(
-              process.env.NEXT_PUBLIC_LOGOUT_REDIRECT_URI!
-            )}`;
+            // const logoutUrl = `${
+            //   process.env.NEXT_PUBLIC_COGNITO_DOMAIN
+            // }/logout?client_id=${
+            //   process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID
+            // }&logout_uri=${encodeURIComponent(
+            //   process.env.NEXT_PUBLIC_LOGOUT_REDIRECT_URI!
+            // )}`;
 
-            window.location.href = logoutUrl;
+            // window.location.href = logoutUrl;
+
+            router.push("/login");
           } catch (err) {
             console.error("Failed to logout:", err);
           }
