@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { WalletOptions } from "@/components/WalletOptions";
 import { useAccount, useConnect, useDisconnect } from "wagmi";
+import { CognitoLoginButton } from "@/components/CognitoButton";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -95,6 +96,8 @@ export default function LoginPage() {
             verifying={isVerifying}
             setIsVerifying={setIsVerifying}
           />
+
+          <CognitoLoginButton />
         </div>
       </div>
     </div>

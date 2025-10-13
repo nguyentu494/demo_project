@@ -27,9 +27,6 @@ export const verifyMessage = async ({
             signature,
             chainId,
         })
-
-
-
         return res.data.data
     } catch (error) {
         console.error(error)

@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-
 import { useRouter } from "next/navigation";
 import {
   useAccount,
@@ -16,74 +15,133 @@ import {
 import { getBalance } from "wagmi/actions";
 import { config } from "../../config";
 import { WalletOptions } from "./WalletOptions";
+import api from "@/libs/axios";
 
 export function Profile() {
+  const router = useRouter();
   const { isConnected, address } = useAccount();
   const { disconnect } = useDisconnect();
+  const { reset, isPending } = useSignMessage();
   const { data: ensName } = useEnsName({ address });
   const { data: ensAvatar } = useEnsAvatar({ name: ensName! });
-  const [balance, setBalance] = React.useState<any>(null);
-  const { reset, isPending } = useSignMessage();
+  const [balance, setBalance] = useState<any>(null);
   const [isMounted, setIsMounted] = useState(false);
+  const [user, setUser] = useState<any>(null);
 
-  const router = useRouter();
   const chains = useChains();
   const chainId = useChainId();
   const { switchChain, status, error } = useSwitchChain();
 
-  console.log(chainId, "thiss is chainId");
-  console.log(chains);
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await fetch("/api/user");
+        const data = await response.json();
+        setUser(data);
+      } catch (err: any) {
+        console.warn("Cannot fetch user:", err.message);
+        // router.push("/login");
+      }
+    };
+    fetchUser();
+  }, [router]);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!isConnected || !address) return;
+    (async () => {
+      const bal = await getBalance(config, { address });
+      setBalance(bal);
+    })();
+  }, [isConnected, address]);
+
+  const handleLogout = async () => {
+    try {
+      disconnect();
+      reset();
+      
+      await fetch("/api/auth/log-out", { method: "GET" });
+
+      const logoutUrl = `${
+        process.env.NEXT_PUBLIC_COGNITO_DOMAIN
+      }/logout?client_id=${
+        process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID
+      }&logout_uri=${encodeURIComponent(
+        process.env.NEXT_PUBLIC_LOGOUT_REDIRECT_URI!
+      )}`;
+
+      window.location.href = logoutUrl;
+    } catch (err) {
+      console.error("Logout failed:", err);
+    }
+  };
+
   const currentChain = useMemo(
     () => chains.find((c) => c.id === chainId),
     [chains, chainId]
   );
 
-  useEffect(() => {
-    if (isConnected && address) {
-      const fetchBalance = async () => {
-        const balance = await getBalance(config, { address });
-        setBalance(balance);
-      };
-      fetchBalance();
-    }
-  }, [isConnected, address]);
-
-  const handleDisconnect = async () => {
-    disconnect();
-    reset();
-    await fetch("/api/auth/log-out", {
-      method: "POST",
-    });
-    router.push("/login");
-  };
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
   if (!isMounted) return null;
 
-  if (!isConnected && !isPending) {
-    return (
-      <div>
-        <h3 className="text-black">
-          Please connect your wallet to view your profile.
-        </h3>
-        <WalletOptions />
-      </div>
-    );
+  if (!user) {
+    return <p className="text-gray-600 p-4">Loading user information...</p>;
   }
 
+  // if (!isConnected && !isPending) {
+  //   return (
+  //     <div>
+  //       <h3 className="text-black mb-2">
+  //         Please connect your wallet to view your profile.
+  //       </h3>
+  //       <WalletOptions />
+  //     </div>
+  //   );
+  // }
+
   return (
-    <div className="text-black">
-      {ensAvatar && <img alt="ENS Avatar" src={ensAvatar} />}
-      {address && <div>{ensName ? `${ensName} (${address})` : address}</div>}
-      {balance && (
-        <div>
-          Balance: {Number(balance.value).toFixed(4)} {balance.symbol}
-        </div>
-      )}
-      <button onClick={handleDisconnect}>Disconnect</button>
-      <div className="p-4 border rounded-lg shadow-sm w-fit space-y-3 bg-white">
+    <div className="text-black space-y-6">
+      <div className="p-4 bg-white border rounded-lg shadow-sm space-y-2">
+        <p>
+          <strong>Username:</strong> {user.username}
+        </p>
+        {Object.entries(user.attributes ?? {}).map(([key, value]) => (
+          <p key={key}>
+            <strong>{key}:</strong> {value as string}
+          </p>
+        ))}
+      </div>
+
+      <div className="space-y-4">
+        {ensAvatar && (
+          <img
+            alt="ENS Avatar"
+            src={ensAvatar}
+            className="w-14 h-14 rounded-full"
+          />
+        )}
+
+        {address && <div>{ensName ? `${ensName} (${address})` : address}</div>}
+
+        {balance && (
+          <div>
+            Balance: {Number(balance.value).toFixed(4)} {balance.symbol}
+          </div>
+        )}
+      </div>
+
+      <div className="flex gap-3">
+        <button
+          onClick={handleLogout}
+          className="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-md transition-all"
+        >
+          Log out
+        </button>
+      </div>
+
+      <div className="p-4 border rounded-lg shadow-sm w-fit space-y-3 bg-white mt-4">
         <h3 className="text-lg font-semibold text-gray-800">Chain Info</h3>
 
         {currentChain ? (
