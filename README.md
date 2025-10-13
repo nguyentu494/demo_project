@@ -1,8 +1,5 @@
 # AWS Cognito + NextAuth + MFA Integration Guide
 
-> 📘 Hướng dẫn chi tiết cách cấu hình **AWS Cognito** để đăng nhập, đăng xuất, và bật **MFA (Authenticator App)** trong ứng dụng **Next.js (NextAuth)**.  
-> File này được sinh tự động từ hướng dẫn gốc, bạn có thể chèn hình minh họa ở các vị trí được đánh dấu `<!-- IMAGE -->`.
-
 ---
 
 ## 1️⃣ Tạo User Pool
@@ -18,7 +15,7 @@
 
 📸 _Chèn ảnh màn hình tạo user pool ở đây:_
 
-<!-- IMAGE: user-pool-create -->
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/7df32777-b9bf-47b5-81c0-dabafeff81e5" />
 
 **Kết quả:** bạn sẽ nhận được `User Pool ID`
 
@@ -30,10 +27,10 @@
 
 1. Trong User Pool → **App integration → App clients → Create app client**
 2. Cấu hình:
-   - Name: `nextjs-demo`
+   - Name: `demo project`
    - Allowed OAuth flows: ✅ _Authorization code grant_
    - Allowed OAuth scopes: ✅ `openid`, `email`, `profile`, `aws.cognito.signin.user.admin`
-   - Allowed callback URLs:
+   - Allowed callback URLs (url bên dưới là do nextauth có hỗ trợ callback):
      ```
      http://localhost:3000/api/auth/callback/cognito
      ```
@@ -45,12 +42,12 @@
 
 📸 _Chèn ảnh màn hình App client settings ở đây:_
 
-<!-- IMAGE: app-client-settings -->
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/d53e00a0-8509-4015-b209-66937256a590" />
 
 **Lưu lại:**
 
 ```
-Client ID = 1dc68vagok8ogafn2da4qnvf8r
+Client ID = 1dc68xxxxxxxxxxxxx
 ```
 
 ---
@@ -64,24 +61,23 @@ Client ID = 1dc68vagok8ogafn2da4qnvf8r
    https://us-east-1hetka1c37.auth.us-east-1.amazoncognito.com
    ```
 
-📸 _Chèn ảnh cấu hình domain ở đây:_
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/e53000f3-3641-486b-9d74-5e87a8daef9c" />
 
-<!-- IMAGE: hosted-ui-domain -->
 
 ---
 
 ## 4️⃣ Bật MFA (Authenticator App)
 
-1. Trong User Pool → **Authentication → MFA and verifications**
+1. Trong User Pool → **Authentication → Sign In → Multi-factor authentication → Edit**
 2. Chọn:
    - MFA: **Optional**
    - MFA types: ✅ _TOTP (Authenticator app)_
    - Software token MFA: ✅ Enable
+   - Lưu ý: MFA bằng email hoặc sms phải cấu hình thêm Amazon SNS và Amazon SES
 3. Save changes
 
-📸 _Chèn ảnh màn hình bật MFA ở đây:_
+<img width="1919" height="1071" alt="image" src="https://github.com/user-attachments/assets/098bdc9e-73de-4d31-9c5f-e5e129adbe0d" />
 
-<!-- IMAGE: enable-mfa -->
 
 Người dùng sau này sẽ có thể scan mã QR bằng Google Authenticator / Authy.
 
@@ -90,12 +86,11 @@ Người dùng sau này sẽ có thể scan mã QR bằng Google Authenticator /
 ## 5️⃣ Thiết lập biến môi trường `.env.local`
 
 ```bash
-NEXTAUTH_SECRET=superlongsecret
-NEXTAUTH_URL=http://localhost:3000
-
-NEXT_PUBLIC_COGNITO_CLIENT_ID=1dc68vagok8ogafn2da4qnvf8r
+NEXT_PUBLIC_COGNITO_CLIENT_ID=1dc68vagxxxxxxxxxxx
+NEXT_PUBLIC_COGNITO_CLIENT_SECRET=196lrmrert3uxxxxxxxxxxxxxx
 NEXT_PUBLIC_COGNITO_ISSUER=https://cognito-idp.us-east-1.amazonaws.com/us-east-1_HeTka1C37
-NEXT_PUBLIC_COGNITO_DOMAIN=us-east-1hetka1c37.auth.us-east-1.amazoncognito.com
+NEXT_PUBLIC_COGNITO_DOMAIN=https://us-east-1hetka1c37.auth.us-east-1.amazoncognito.com
+NEXT_PUBLIC_LOGOUT_REDIRECT_URI=http://localhost:3000/login // logout này phải được cấu hình cho allowed logout baseurl
 ```
 
 ---
@@ -106,25 +101,25 @@ Tạo file:
 `app/api/auth/[...nextauth]/route.ts`
 
 ```ts
+import { cookies } from "next/headers";
 import NextAuth from "next-auth";
 import CognitoProvider from "next-auth/providers/cognito";
-import { cookies } from "next/headers";
 
 const handler = NextAuth({
   providers: [
     CognitoProvider({
       clientId: process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID!,
+      clientSecret: process.env.NEXT_PUBLIC_COGNITO_CLIENT_SECRET!,
       issuer: process.env.NEXT_PUBLIC_COGNITO_ISSUER!,
-      clientSecret: "",
       authorization: {
         params: {
-          scope: "openid email profile aws.cognito.signin.user.admin",
-          prompt: "login",
+          scope: "openid email profile aws.cognito.signin.user.admin", 
         },
       },
     }),
   ],
   session: { strategy: "jwt" },
+
   callbacks: {
     async jwt({ token, account }) {
       if (account) {
@@ -134,18 +129,43 @@ const handler = NextAuth({
       }
       return token;
     },
+
     async session({ session, token }) {
+      const accessToken = token.accessToken as string;
+      const refreshToken = token.refreshToken as string | undefined;
+      const idToken = token.idToken as string | undefined;
+
       const cookieStore = cookies();
-      if (token.accessToken)
-        (await cookieStore).set("accessToken", token.accessToken as string, {
+
+      if (accessToken) {
+        (await cookieStore).set("accessToken", accessToken, {
           httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          maxAge: 60 * 60,
           path: "/",
         });
-      if (token.refreshToken)
-        (await cookieStore).set("refreshToken", token.refreshToken as string, {
+      }
+
+      if (refreshToken) {
+        (await cookieStore).set("refreshToken", refreshToken, {
           httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          maxAge: 30 * 24 * 60 * 60,
           path: "/",
         });
+      }
+
+      if (idToken) {
+        (await cookieStore).set("idToken", idToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          maxAge: 60 * 60,
+          path: "/",
+        });
+      }
+
+      session.accessToken = accessToken;
+      session.refreshToken = refreshToken as string;
       return session;
     },
   },
@@ -154,9 +174,8 @@ const handler = NextAuth({
 export { handler as GET, handler as POST };
 ```
 
-📸 _Chèn ảnh phần cấu hình provider trong NextAuth:_
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/0e892cfc-1118-4b2b-a77c-d65a92501ec4" />
 
-<!-- IMAGE: nextauth-config -->
 
 ---
 
@@ -173,38 +192,53 @@ import {
   RevokeTokenCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
 
-export async function POST() {
+export async function GET() {
   try {
     const cookieStore = cookies();
-    const refreshToken = cookieStore.get("refreshToken")?.value;
+    const refreshToken = (await cookieStore).get("refreshToken")?.value;
 
-    if (refreshToken) {
-      const client = new CognitoIdentityProviderClient({ region: "us-east-1" });
-      await client.send(
-        new RevokeTokenCommand({
-          Token: refreshToken,
-          ClientId: process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID!,
-        })
+    if (!refreshToken) {
+      return NextResponse.json(
+        { error: "Missing refresh token" },
+        { status: 400 }
       );
     }
+
+    const client = new CognitoIdentityProviderClient({ region: "us-east-1" });
+    await client.send(
+      new RevokeTokenCommand({
+        Token: refreshToken,
+        ClientSecret: process.env.NEXT_PUBLIC_COGNITO_CLIENT_SECRET,
+        ClientId: process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID!,
+      })
+    );
 
     const res = NextResponse.json({ success: true });
     const expired = new Date(0);
 
-    ["accessToken", "refreshToken", "idToken"].forEach((name) => {
-      res.cookies.set(name, "", {
-        httpOnly: true,
-        path: "/",
-        expires: expired,
-      });
+    res.cookies.set("accessToken", "", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      expires: expired,
     });
 
-    // Redirect xóa session Hosted UI
-    res.headers.set(
-      "Location",
-      `https://${process.env.NEXT_PUBLIC_COGNITO_DOMAIN}/logout?client_id=${process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID}&logout_uri=http://localhost:3000/login`
-    );
-    res.status = 302;
+    res.cookies.set("idToken", "", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      expires: expired,
+    });
+
+    res.cookies.set("refreshToken", "", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      expires: expired,
+    });
 
     return res;
   } catch (err: any) {
@@ -213,10 +247,10 @@ export async function POST() {
   }
 }
 ```
+Log-out ở hàm trên chỉ xóa cookies ở client và phải gọi tới endpoint logout của Cognito để hủy session trên server
 
-📸 _Chèn ảnh minh họa luồng logout:_
+<img width="600" height="400" alt="image" src="https://github.com/user-attachments/assets/f95466f7-0af9-4e7c-afdb-657288984738" />
 
-<!-- IMAGE: logout-flow -->
 
 ---
 
@@ -226,28 +260,56 @@ export async function POST() {
 2. Quét QR bằng Authenticator app
 3. Xác thực mã OTP 6 chữ số
 
-📸 _Chèn ảnh màn hình người dùng quét QR code:_
-
-<!-- IMAGE: mfa-setup -->
-
 ---
 
 ## 9️⃣ Kiểm tra thông tin user qua Access Token
 
 ```ts
+// app/api/user/route.ts
+import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import {
   CognitoIdentityProviderClient,
   GetUserCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
 
 const client = new CognitoIdentityProviderClient({ region: "us-east-1" });
-const res = await client.send(new GetUserCommand({ AccessToken: accessToken }));
-console.log(res.UserAttributes);
+
+export async function GET() {
+  try {
+    const cookieStore = cookies();
+    const accessToken = (await cookieStore).get("accessToken")?.value;
+
+    if (!accessToken) {
+      return NextResponse.json(
+        { error: "Missing access token" },
+        { status: 401 }
+      );
+    }
+
+    const res = await client.send(
+      new GetUserCommand({ AccessToken: accessToken })
+    );
+
+    const userAttributes: Record<string, string> = {};
+    res.UserAttributes?.forEach((attr) => {
+      if (attr.Name) {
+        userAttributes[attr.Name] = attr.Value ?? "";
+      }
+    });
+
+    return NextResponse.json({
+      username: res.Username,
+      attributes: userAttributes,
+    });
+  } catch (err: any) {
+    console.error("GetUser error:", err);
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
 ```
 
-📸 _Chèn ảnh ví dụ API GetUser trả về dữ liệu user:_
-
-<!-- IMAGE: getuser-response -->
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/f8d94158-cf46-42a0-9aa1-9caa793fcf22" />
 
 ---
 
@@ -266,13 +328,6 @@ console.log(res.UserAttributes);
 > 🧩 Ghi chú:
 >
 > - Nếu dùng custom domain (VD: `auth.tukitoeic.app`), sửa lại biến `NEXT_PUBLIC_COGNITO_DOMAIN`.
-> - Nếu bật **mandatory MFA**, người dùng sẽ luôn bị yêu cầu nhập mã OTP khi login.
-> - Bạn có thể chèn sơ đồ flow (sequence diagram) ở cuối file nếu muốn.
-
-📸 _Chèn sơ đồ tổng quan luồng login/logout ở đây:_
-
-<!-- IMAGE: final-flow -->
-
 ---
 
 ## 🎯 Kết quả cuối cùng
