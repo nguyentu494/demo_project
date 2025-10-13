@@ -1,5 +1,10 @@
 # AWS Cognito + NextAuth + MFA Integration Guide
 
+**NodeJS Version**: v22.17.0
+**pnpm Version**: 10.12.4
+**@aws-sdk/client-cognito-identity-provider**: ^3.908.0
+**openid-client**: ^6.8.1,
+
 ---
 
 ## 1️⃣ Tạo User Pool
@@ -63,7 +68,6 @@ Client ID = 1dc68xxxxxxxxxxxxx
 
 <img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/e53000f3-3641-486b-9d74-5e87a8daef9c" />
 
-
 ---
 
 ## 4️⃣ Bật MFA (Authenticator App)
@@ -77,7 +81,6 @@ Client ID = 1dc68xxxxxxxxxxxxx
 3. Save changes
 
 <img width="1919" height="1071" alt="image" src="https://github.com/user-attachments/assets/098bdc9e-73de-4d31-9c5f-e5e129adbe0d" />
-
 
 Người dùng sau này sẽ có thể scan mã QR bằng Google Authenticator / Authy.
 
@@ -113,7 +116,7 @@ const handler = NextAuth({
       issuer: process.env.NEXT_PUBLIC_COGNITO_ISSUER!,
       authorization: {
         params: {
-          scope: "openid email profile aws.cognito.signin.user.admin", 
+          scope: "openid email profile aws.cognito.signin.user.admin",
         },
       },
     }),
@@ -175,7 +178,6 @@ export { handler as GET, handler as POST };
 ```
 
 <img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/0e892cfc-1118-4b2b-a77c-d65a92501ec4" />
-
 
 ---
 
@@ -247,10 +249,10 @@ export async function GET() {
   }
 }
 ```
+
 Log-out ở hàm trên chỉ xóa cookies ở client và phải gọi tới endpoint logout của Cognito để hủy session trên server
 
 <img width="600" height="400" alt="image" src="https://github.com/user-attachments/assets/f95466f7-0af9-4e7c-afdb-657288984738" />
-
 
 ---
 
@@ -328,6 +330,7 @@ export async function GET() {
 > 🧩 Ghi chú:
 >
 > - Nếu dùng custom domain (VD: `auth.tukitoeic.app`), sửa lại biến `NEXT_PUBLIC_COGNITO_DOMAIN`.
+
 ---
 
 ## 🎯 Kết quả cuối cùng
