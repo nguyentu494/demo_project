@@ -1,8 +1,5 @@
 # AWS Cognito + NextAuth + MFA Integration Guide
 
-> 📘 Hướng dẫn chi tiết cách cấu hình **AWS Cognito** để đăng nhập, đăng xuất, và bật **MFA (Authenticator App)** trong ứng dụng **Next.js (NextAuth)**.  
-> File này được sinh tự động từ hướng dẫn gốc, bạn có thể chèn hình minh họa ở các vị trí được đánh dấu `<!-- IMAGE -->`.
-
 ---
 
 ## 1️⃣ Tạo User Pool
@@ -18,7 +15,7 @@
 
 📸 _Chèn ảnh màn hình tạo user pool ở đây:_
 
-<!-- IMAGE: user-pool-create -->
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/7df32777-b9bf-47b5-81c0-dabafeff81e5" />
 
 **Kết quả:** bạn sẽ nhận được `User Pool ID`
 
@@ -30,10 +27,10 @@
 
 1. Trong User Pool → **App integration → App clients → Create app client**
 2. Cấu hình:
-   - Name: `nextjs-demo`
+   - Name: `demo project`
    - Allowed OAuth flows: ✅ _Authorization code grant_
    - Allowed OAuth scopes: ✅ `openid`, `email`, `profile`, `aws.cognito.signin.user.admin`
-   - Allowed callback URLs:
+   - Allowed callback URLs (url bên dưới là do nextauth có hỗ trợ callback):
      ```
      http://localhost:3000/api/auth/callback/cognito
      ```
@@ -50,7 +47,7 @@
 **Lưu lại:**
 
 ```
-Client ID = 1dc68vagok8ogafn2da4qnvf8r
+Client ID = 1dc68xxxxxxxxxxxxx
 ```
 
 ---
