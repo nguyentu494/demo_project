@@ -129,7 +129,7 @@ export default function ConfirmForm() {
               placeholder="Tên đăng nhập"
               value={username}
               {...register("username")}
-              className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-orange-400 outline-none"
+              className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-orange-400 outline-none hidden"
               disabled={!!username}
             />
             {errors.username && (
