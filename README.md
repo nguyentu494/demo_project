@@ -148,9 +148,12 @@ The Secret Hash acts as a **digital signature** verifying that the request origi
 
 The hash is generated with this formula:
 
-[
-\text{SecretHash} = \text{Base64Encode}\left( \text{HMAC-SHA256}( \text{username} + \text{clientId}, \text{clientSecret} ) \right)
-]
+SecretHash = Base64Encode(
+  HMAC-SHA256(
+    username + clientId,
+    clientSecret
+  )
+)
 
 Where:
 
