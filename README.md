@@ -109,9 +109,6 @@ NEXT_PUBLIC_LOGOUT_REDIRECT_URI=http://localhost:3000/login
 
 ### Helper: generateSecretHash(username: string): string
 
-Rất hay — hàm này chính là phần **Cognito client-side signature** mà AWS yêu cầu khi App Client có **Client Secret** được bật.
-Dưới đây là phần mô tả (viết kiểu README, chuẩn kỹ thuật, trích dẫn đúng tài liệu AWS Cognito):
-
 ---
 
 ### 🔐 `generateSecretHash(username: string): string`
