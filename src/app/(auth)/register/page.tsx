@@ -2,80 +2,54 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { RegisterSchema, RegisterSchemaType } from "@/types/request/RegisterRequest";
+import { ErrorMessage } from "@hookform/error-message";
+import { useAuthStore } from "@/hooks/useAuthStore";
+
 
 export default function RegisterForm() {
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
-  const [passwordErrors, setPasswordErrors] = useState<string[]>([]);
   const router = useRouter();
+  const [serverError, setServerError] = useState("");
+  const [message, setMessage] = useState("");
 
-  const validatePassword = (password: string) => {
-    const errors: string[] = [];
+  const { setUsername } = useAuthStore();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    watch,
+  } = useForm<RegisterSchemaType>({
+    resolver: zodResolver(RegisterSchema),
+  });
 
-    if (!/\d/.test(password)) {
-      errors.push("Chứa ít nhất 1 số");
-    }
+  const password = watch("password", "");
 
-    if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)) {
-      errors.push("Chứa ít nhất 1 ký tự đặc biệt");
-    }
-
-    if (!/[A-Z]/.test(password)) {
-      errors.push("Chứa ít nhất 1 chữ cái viết hoa");
-    }
-
-    if (!/[a-z]/.test(password)) {
-      errors.push("Chứa ít nhất 1 chữ cái viết thường");
-    }
-
-    if (password.length < 8) {
-      errors.push("Tối thiểu 8 ký tự");
-    }
-
-    return errors;
-  };
-
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newPassword = e.target.value;
-    setPassword(newPassword);
-
-    if (newPassword) {
-      const errors = validatePassword(newPassword);
-      setPasswordErrors(errors);
-    } else {
-      setPasswordErrors([]);
-    }
-  };
-
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
+  const onSubmit = async (data: RegisterSchemaType) => {
+    setServerError("");
     setMessage("");
+    const { repassword, ...registerData } = data;
 
-    const errors = validatePassword(password);
-    if (errors.length > 0) {
-      setError("Mật khẩu không đáp ứng yêu cầu bảo mật.");
-      return;
-    }
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(registerData),
+      });
 
-    const res = await fetch("/api/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, email, password }),
-    });
+      const result = await res.json();
 
-    const data = await res.json();
-    if (res.ok) {
-      setMessage("Đăng ký thành công! Kiểm tra email để xác minh tài khoản.");
-      setUsername("");
-      setEmail("");
-      setPassword("");
-      router.push("/confirm");
-    } else {
-      setError(data.error || "Đăng ký thất bại.");
+      if (res.ok) {
+        setUsername(registerData.username);
+
+        setMessage("Đăng ký thành công! Kiểm tra email để xác minh tài khoản.");
+        router.push("/confirm");
+      } else {
+        setServerError(result.error || "Đăng ký thất bại.");
+      }
+    } catch {
+      setServerError("Không thể kết nối đến máy chủ.");
     }
   };
 
@@ -87,119 +61,138 @@ export default function RegisterForm() {
         </h2>
 
         <form
-          onSubmit={handleRegister}
+          onSubmit={handleSubmit(onSubmit, (err) => {
+            console.log("❌ validation failed:", err);
+          })}
           className="flex flex-col space-y-4 text-black"
         >
-          <input
-            type="text"
-            placeholder="Tên đăng nhập"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            className="border rounded-lg px-4 py-2 focus:ring-2 focus:ring-orange-400 focus:outline-none"
-            required
-          />
-          <input
-            type="email"
-            placeholder="Địa chỉ email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="border rounded-lg px-4 py-2 focus:ring-2 focus:ring-orange-400 focus:outline-none"
-            required
-          />
-          <div className="space-y-2">
+          <div>
+            <input
+              type="text"
+              placeholder="Tên đăng nhập"
+              {...register("username")}
+              className="border rounded-lg px-4 py-2 w-full focus:ring-2 focus:ring-orange-400 focus:outline-none"
+            />
+            <ErrorMessage
+              errors={errors}
+              name="username"
+              render={({ message }) => (
+                <p className="text-red-500 text-sm mt-1">{message}</p>
+              )}
+            />
+          </div>
+
+          <div>
+            <input
+              type="email"
+              placeholder="Địa chỉ email"
+              {...register("email")}
+              className="border rounded-lg px-4 py-2 w-full focus:ring-2 focus:ring-orange-400 focus:outline-none"
+            />
+            <ErrorMessage
+              errors={errors}
+              name="email"
+              render={({ message }) => (
+                <p className="text-red-500 text-sm mt-1">{message}</p>
+              )}
+            />
+          </div>
+
+          <div>
             <input
               type="password"
               placeholder="Mật khẩu"
-              value={password}
-              onChange={handlePasswordChange}
-              className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-orange-400 focus:outline-none"
-              required
+              {...register("password")}
+              className="border rounded-lg px-4 py-2 w-full focus:ring-2 focus:ring-orange-400 focus:outline-none"
             />
-
-            {/* Password Requirements */}
+            <ErrorMessage
+              errors={errors}
+              name="password"
+              render={({ message }) => (
+                <p className="text-red-500 text-sm mt-1">{message}</p>
+              )}
+            />
             {password && (
-              <div className="bg-gray-50 border rounded-lg p-3">
+              <div className="bg-gray-50 border rounded-lg p-3 mt-2">
                 <p className="text-sm font-medium text-gray-700 mb-2">
                   Yêu cầu mật khẩu:
                 </p>
-                <div className="space-y-1">
-                  <div
-                    className={`flex items-center text-xs ${
-                      password.length >= 8 ? "text-green-600" : "text-red-500"
-                    }`}
-                  >
-                    <span className="mr-2">
-                      {password.length >= 8 ? "✓" : "✗"}
-                    </span>
+                <div className="space-y-1 text-xs">
+                  <CheckRule ok={password.length >= 8}>
                     Tối thiểu 8 ký tự
-                  </div>
-                  <div
-                    className={`flex items-center text-xs ${
-                      /\d/.test(password) ? "text-green-600" : "text-red-500"
-                    }`}
-                  >
-                    <span className="mr-2">
-                      {/\d/.test(password) ? "✓" : "✗"}
-                    </span>
+                  </CheckRule>
+                  <CheckRule ok={/\d/.test(password)}>
                     Chứa ít nhất 1 số
-                  </div>
-                  <div
-                    className={`flex items-center text-xs ${
-                      /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)
-                        ? "text-green-600"
-                        : "text-red-500"
-                    }`}
+                  </CheckRule>
+                  <CheckRule ok={/[A-Z]/.test(password)}>
+                    Chứa ít nhất 1 chữ hoa
+                  </CheckRule>
+                  <CheckRule ok={/[a-z]/.test(password)}>
+                    Chứa ít nhất 1 chữ thường
+                  </CheckRule>
+                  <CheckRule
+                    ok={/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)}
                   >
-                    <span className="mr-2">
-                      {/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password)
-                        ? "✓"
-                        : "✗"}
-                    </span>
                     Chứa ít nhất 1 ký tự đặc biệt
-                  </div>
-                  <div
-                    className={`flex items-center text-xs ${
-                      /[A-Z]/.test(password) ? "text-green-600" : "text-red-500"
-                    }`}
-                  >
-                    <span className="mr-2">
-                      {/[A-Z]/.test(password) ? "✓" : "✗"}
-                    </span>
-                    Chứa ít nhất 1 chữ cái viết hoa
-                  </div>
-                  <div
-                    className={`flex items-center text-xs ${
-                      /[a-z]/.test(password) ? "text-green-600" : "text-red-500"
-                    }`}
-                  >
-                    <span className="mr-2">
-                      {/[a-z]/.test(password) ? "✓" : "✗"}
-                    </span>
-                    Chứa ít nhất 1 chữ cái viết thường
-                  </div>
+                  </CheckRule>
                 </div>
               </div>
             )}
           </div>
 
-          {error && <p className="text-red-500 text-center text-sm">{error}</p>}
+          <div>
+            <input
+              type="password"
+              placeholder="Nhập lại Mật khẩu"
+              {...register("repassword")}
+              className="border rounded-lg px-4 py-2 w-full focus:ring-2 focus:ring-orange-400 focus:outline-none"
+            />
+            <ErrorMessage
+              errors={errors}
+              name="repassword"
+              render={({ message }) => (
+                <p className="text-red-500 text-sm mt-1">{message}</p>
+              )}
+            />
+          </div>
+
+          {serverError && (
+            <p className="text-red-500 text-center text-sm">{serverError}</p>
+          )}
           {message && (
             <p className="text-green-600 text-center text-sm">{message}</p>
           )}
 
           <button
             type="submit"
-            disabled={passwordErrors.length > 0 && password.length > 0}
+            disabled={isSubmitting}
             className={`font-semibold py-2 rounded-lg transition ${
-              passwordErrors.length > 0 && password.length > 0
-                ? "bg-gray-400 cursor-not-allowed text-gray-600"
+              isSubmitting
+                ? "bg-gray-400 cursor-not-allowed text-gray-700"
                 : "bg-orange-500 hover:bg-orange-600 text-white"
             }`}
           >
-            Đăng ký
+            {isSubmitting ? "Đang đăng ký..." : "Đăng ký"}
           </button>
         </form>
       </div>
+    </div>
+  );
+}
+
+function CheckRule({
+  ok,
+  children,
+}: {
+  ok: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      className={`flex items-center ${ok ? "text-green-600" : "text-red-500"}`}
+    >
+      <span className="mr-2">{ok ? "✓" : "✗"}</span>
+      {children}
     </div>
   );
 }

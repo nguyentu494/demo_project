@@ -1,4 +1,3 @@
-// src/app/api/auth/login/route.ts
 import { NextResponse } from "next/server";
 import {
   CognitoIdentityProviderClient,
@@ -22,17 +21,7 @@ export async function POST(req: Request) {
       },
     });
 
-    const response = await client.send(command);
-
-    // if (response.ChallengeName) {
-    //   return NextResponse.json({
-    //     success: false,
-    //     challenge: response.ChallengeName,
-    //     session: response.Session,
-    //     message: "MFA required or another challenge present.",
-    //   });
-    // }
-
+    const response = await client.send(command);  
 
     const res = NextResponse.json({ success: true });
 

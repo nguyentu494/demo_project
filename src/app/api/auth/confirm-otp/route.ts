@@ -28,8 +28,10 @@ export async function POST(req: Request) {
   } catch (err: any) {
     console.error("Confirm failed:", err.name, err.message);
     let message = "Mã xác minh không hợp lệ hoặc đã hết hạn.";
+    if (err.name === "AliasExistsException")
+      message = "Email đã được dùng để xác minh trước đó.";
     if (err.name === "CodeMismatchException")
-      message = "Mã OTP không chính xác.";
+        message = "Mã OTP không chính xác.";
     if (err.name === "ExpiredCodeException") message = "Mã OTP đã hết hạn.";
     return NextResponse.json({ error: message }, { status: 400 });
   }

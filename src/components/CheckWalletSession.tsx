@@ -40,7 +40,7 @@ export function WalletSessionSync() {
         if (!isConnected && !authenticated) {
           try {
             await fetch("/api/auth/log-out", {
-              method: "GET",
+              method: "POST",
               credentials: "include",
             });
 

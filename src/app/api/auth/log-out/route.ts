@@ -5,7 +5,7 @@ import {
   RevokeTokenCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
 
-export async function GET() {
+export async function POST() {
   try {
     const cookieStore = cookies();
     const refreshToken = (await cookieStore).get("refreshToken")?.value;

@@ -64,7 +64,7 @@ export function Profile() {
       reset();
 
       await fetch("/api/auth/log-out", {
-        method: "GET",
+        method: "POST",
         credentials: "include",
       });
 
