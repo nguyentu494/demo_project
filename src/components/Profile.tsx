@@ -15,39 +15,40 @@ import {
 import { getBalance } from "wagmi/actions";
 import { config } from "../../config";
 import { WalletOptions } from "./WalletOptions";
-import api from "@/libs/axios";
 
 export function Profile() {
   const router = useRouter();
   const { isConnected, address } = useAccount();
   const { disconnect } = useDisconnect();
-  const { reset, isPending } = useSignMessage();
+  const { reset } = useSignMessage();
+
   const { data: ensName } = useEnsName({ address });
   const { data: ensAvatar } = useEnsAvatar({ name: ensName! });
+
   const [balance, setBalance] = useState<any>(null);
-  const [isMounted, setIsMounted] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [isMounted, setIsMounted] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const chains = useChains();
   const chainId = useChainId();
   const { switchChain, status, error } = useSwitchChain();
 
   useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await fetch("/api/user");
-        const data = await response.json();
+        const res = await fetch("/api/user");
+        const data = await res.json();
         setUser(data);
       } catch (err: any) {
         console.warn("Cannot fetch user:", err.message);
-        // router.push("/login");
       }
     };
     fetchUser();
-  }, [router]);
-
-  useEffect(() => {
-    setIsMounted(true);
   }, []);
 
   useEffect(() => {
@@ -60,6 +61,7 @@ export function Profile() {
 
   const handleLogout = async () => {
     try {
+      setIsLoggingOut(true);
       disconnect();
       reset();
 
@@ -68,18 +70,11 @@ export function Profile() {
         credentials: "include",
       });
 
-      // const logoutUrl = `${
-      //   process.env.NEXT_PUBLIC_COGNITO_DOMAIN
-      // }/logout?client_id=${
-      //   process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID
-      // }&logout_uri=${encodeURIComponent(
-      //   process.env.NEXT_PUBLIC_LOGOUT_REDIRECT_URI!
-      // )}`;
-
-      // window.location.href = logoutUrl;
       router.push("/login");
     } catch (err) {
       console.error("Logout failed:", err);
+    } finally {
+      setIsLoggingOut(false);
     }
   };
 
@@ -90,20 +85,8 @@ export function Profile() {
 
   if (!isMounted) return null;
 
-  if (!user) {
+  if (!user)
     return <p className="text-gray-600 p-4">Loading user information...</p>;
-  }
-
-  // if (!isConnected && !isPending) {
-  //   return (
-  //     <div>
-  //       <h3 className="text-black mb-2">
-  //         Please connect your wallet to view your profile.
-  //       </h3>
-  //       <WalletOptions />
-  //     </div>
-  //   );
-  // }
 
   return (
     <div className="text-black space-y-6">
@@ -139,9 +122,14 @@ export function Profile() {
       <div className="flex gap-3">
         <button
           onClick={handleLogout}
-          className="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded-md transition-all"
+          disabled={isLoggingOut}
+          className={`px-3 py-1.5 rounded-md text-white transition-all ${
+            isLoggingOut
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-red-500 hover:bg-red-600"
+          }`}
         >
-          Log out
+          {isLoggingOut ? "Logging out..." : "Log out"}
         </button>
       </div>
 

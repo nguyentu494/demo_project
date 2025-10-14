@@ -1,7 +1,7 @@
 import { Product, ProductFetch, ProductResponse } from "@/types/implements/Product";
 import { NextResponse } from "next/server";
 
-export const revalidate = 60; // cache 60s
+export const revalidate = 60;
 
 export async function GET() {
   const res = await fetch("https://dummyjson.com/products");
