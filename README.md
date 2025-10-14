@@ -761,8 +761,6 @@ sequenceDiagram
     API-->>Frontend: Clear cookies
 ```
 
-![alt text](<./public/Mermaid Chart - Create complex, visual diagrams with text.-2025-10-14-041722.png>)
-
 ---
 
 ## 7️⃣ AWS SDK Command Reference
