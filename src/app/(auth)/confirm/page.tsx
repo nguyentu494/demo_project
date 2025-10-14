@@ -5,31 +5,39 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { ConfirmSchema, ConfirmSchemaType } from "@/types/request/ConfirmRequest";
+import {
+  ConfirmSchema,
+  ConfirmSchemaType,
+} from "@/types/request/ConfirmRequest";
 import { useAuthStore } from "@/hooks/useAuthStore";
-
 
 export default function ConfirmForm() {
   const router = useRouter();
   const [serverError, setServerError] = useState("");
   const [serverMessage, setServerMessage] = useState("");
   const [isResending, setIsResending] = useState(false);
-  const [cooldown, setCooldown] = useState(0);
 
-  const { clearUsername, username } = useAuthStore();
+  const { username, clearUsername, cooldown, setCooldown } = useAuthStore();
+  console.log(username);
 
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
+    reset,
     getValues,
   } = useForm<ConfirmSchemaType>({
     resolver: zodResolver(ConfirmSchema),
+    defaultValues: {
+      username: username,
+      code: "",
+    },
   });
 
   const onSubmit = async (data: ConfirmSchemaType) => {
     setServerError("");
     setServerMessage("");
+    console.log(data);
 
     try {
       const res = await fetch("/api/auth/confirm-otp", {
@@ -88,6 +96,11 @@ export default function ConfirmForm() {
       setIsResending(false);
     }
   };
+  useEffect(() => {
+    if (username) {
+      reset({ username, code: "" });
+    }
+  }, [username, reset]);
 
   useEffect(() => {
     if (cooldown > 0) {
@@ -116,7 +129,7 @@ export default function ConfirmForm() {
               placeholder="Tên đăng nhập"
               value={username}
               {...register("username")}
-              className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-orange-400 outline-none hidden"
+              className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-orange-400 outline-none"
               disabled={!!username}
             />
             {errors.username && (
