@@ -1,4 +1,4 @@
-<img width="1916" height="1079" alt="image" src="https://github.com/user-attachments/assets/0c09f039-8d4e-4b1b-9e36-19a964e988ba" /># AWS Cognito Custom Authentication Guide
+# AWS Cognito Custom Authentication Guide
 
 > 📘 A complete, production-ready guide for integrating **AWS Cognito authentication** into a **Next.js 15+** application. Includes user registration, OTP verification, token management, and user info retrieval.
 
