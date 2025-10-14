@@ -81,7 +81,8 @@ NEXT_PUBLIC_LOGOUT_REDIRECT_URI=http://localhost:3000/login
    - **Self-registration**: Enabled
    - **Required attributes**: `email`
 
-📸 <!-- IMAGE: user-pool-creation -->
+  <img width="1916" height="1079" alt="image" src="https://github.com/user-attachments/assets/3a9c0ebf-9b38-46ac-8354-90298bb67fcc" />
+
 
 **Result**: Save your `User Pool ID`
 
@@ -89,15 +90,16 @@ NEXT_PUBLIC_LOGOUT_REDIRECT_URI=http://localhost:3000/login
 
 ### Creating an App Client
 
-1. In your User Pool → **App integration** → **App clients**
+1. In your User Pool → **App integration** → **App clients** → **Edits**
 2. Click **Create app client**
 3. Configure the app client:
    - **App client name**: `demo project`
    - **Authentication flow**: ✅ **ALLOW_USER_PASSWORD_AUTH**
    - **Authentication flow**: ✅ **ALLOW_REFRESH_TOKEN_AUTH**
    - **Generate client secret**: ✅ **Yes** (required for server-side operations)
+     
+<img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/b7584194-8ecc-4b6d-94ea-b05a5946f25e" />
 
-📸 <!-- IMAGE: app-client-creation -->
 
 **Important**: Enable `ALLOW_USER_PASSWORD_AUTH` flow for custom authentication.
 
