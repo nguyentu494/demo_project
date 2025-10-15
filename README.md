@@ -811,6 +811,8 @@ const handleCognitoError = (error: any) => {
 
 - [AWS Cognito Developer Guide](https://docs.aws.amazon.com/cognito/latest/developerguide/)
 - [AWS SDK for JavaScript v3](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/)
+- [AWS SDK v3 – Cognito Identity Provider Client](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-client-cognito-identity-provider/)
+
 
 ---
 
