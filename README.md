@@ -151,32 +151,6 @@ Build and run on an emulator or physical device.
 
 ---
 
-## Development Workflow
-
-### 🔹 Local Development (Live Reload)
-
-For faster iteration, you can connect your emulator to the local dev server:
-
-```ts
-// capacitor.config.ts
-server: {
-  url: "http://<your-local-ip>:3000",
-  cleartext: true,
-}
-```
-
-Then run:
-```bash
-pnpm run dev
-npx cap copy android
-npx cap open android
-```
-
-Your app will load directly from the live dev server.  
-For production builds, **remove `server.url`** and rebuild.
-
----
-
 ### 🔹 Production Build
 
 ```bash
@@ -200,7 +174,6 @@ Run `npx cap sync` after installing any new plugin.
 
 - **Common Errors**
   - `index.html not found`: ensure `/out` folder exists after build.
-  - `Unexpected token <`: usually caused by misconfigured export or missing asset prefix.
 
 - **Folder Paths**  
   Capacitor expects your static build to live inside `webDir` (commonly `/out`).
