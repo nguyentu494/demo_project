@@ -121,12 +121,20 @@ export default function LoginPage() {
           verifying={isVerifying}
           setIsVerifying={setIsVerifying}
         />
-        <Link
-          href="/register"
-          className="text-sm text-gray-500 hover:underline"
-        >
-          Đăng ký tài khoản
-        </Link>
+        <div className="flex flex-col items-end">
+          <Link
+            href="/register"
+            className="text-sm text-gray-500 hover:underline"
+          >
+            Đăng ký tài khoản
+          </Link>
+          <Link
+            href="/forgot-password"
+            className="text-sm text-gray-500 hover:underline mt-4"
+          >
+            Quên mật khẩu
+          </Link>
+        </div>
       </div>
     </div>
   );
