@@ -61,8 +61,6 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "export",
-  basePath: "",
-  assetPrefix: "./",
   trailingSlash: true,
   images: {
     remotePatterns: [
@@ -168,9 +166,6 @@ Run `npx cap sync` after installing any new plugin.
 - **SSR is not supported**  
   Use static export only (`output: 'export'`).  
   Disable features requiring Node.js servers such as NextAuth or API routes.
-
-- **Asset Prefix**  
-  Always set `assetPrefix: './'` to ensure assets load correctly on device.
 
 - **Common Errors**
   - `index.html not found`: ensure `/out` folder exists after build.
